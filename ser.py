@@ -4,36 +4,48 @@ import sys
 import os
 
 #65 MB
-HEADER = 1024*65#51200 #sys.argv[1] # Passar como argumento na linha de comando, tamanho do buffer
-PORT = 8080
-# SERVER =  socket.gethostbyname(socket.gethostname())
+HEADER = 1024*65
+PORTA = 8080
 
 # Inicia um server localhost com o parametro vazio
 SERVER =  socket.gethostbyname(socket.getfqdn())
 
-ADDR = (SERVER, PORT)
-FORMAT = 'utf-8'
-DISCONNECT_MESSAGE = "!DISCONNECT"
+ADDR = (SERVER, PORTA)
+CODIFICACAO = 'utf-8'
+MSG_SAIDA = "DESCONECTAR!"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Faz o link com ADDR
 server.bind(ADDR)
 
-def criaDir(nomeDir, conn):
+
+def mudaDir(nomeDir):
+    dirAtual = os.listdir()
+
+    for x in dirAtual:
+        print(x)
+        
+        if  x == nomeDir and os.path.isdir(x):
+            print(f"Achou!!!!!!!!!!! {x}")
+            print(os.getcwd())
+            os.chdir(x)
+
+
+def criaDir(nomeDir, conexao):
+
     try:
         os.mkdir(nomeDir)
-
-        msg = "Diretorio criado!"
-        msg.encode()
-        conn.send(bytes( msg, FORMAT))
+        conexao.send("Diretorio criado!".encode(CODIFICACAO))
 
     except Exception as e:
         print(e)
         msg = "Nao foi possivel criar diretorio!"
         msg.encode()
-        conn.send(bytes( msg, FORMAT))
+        conexao.send("Nao foi possivel criar diretorio!".encode(CODIFICACAO))
 
 #Arquivo
-def enviaArq(file, buffer, conn):
+def enviaArq(file, buffer, conexao):
     print(f"Chamou criaArq// NOME PASSADO -> {file}")
     print()
     print()
@@ -44,25 +56,15 @@ def enviaArq(file, buffer, conn):
     try:
         arquivo = open(file, "x+")
         arquivo.write(buffer)
-
-        alerta = "Aquivo enviado!"
-        alerta.encode(FORMAT)
-        conn.send(bytes(alerta, "utf-8"))
+        conexao.send("Aquivo enviado!".encode(CODIFICACAO))
 
     except Exception as e:
         print(e)
-
-        msg = "Arquivo ja enviado"
-        msg.encode(FORMAT)
-        conn.send(bytes(msg, FORMAT))
-    # Cria novo arquivo
-    #newFile = open(name, "x")
-
+        conexao.send("Arquivo ja enviado".encode(CODIFICACAO))
     
-    #print(f"Aqui o nome do arquivo {nome}")
     pass
 
-def listaDir(conn):
+def listaDir(conexao):
 
     lista = open("lista", "w")
     msg = os.listdir(".")
@@ -77,60 +79,75 @@ def listaDir(conn):
     f = open("lista", "r")
     texto = f.read()
 
-    texto.encode(FORMAT)
+    texto.encode(CODIFICACAO)
 
-    conn.send(bytes( texto, 'utf-8'))
+    conexao.send(bytes( texto, 'utf-8'))
     os.remove("lista")
 
-    # print("*************************Chamou listaDir")
     return
 
 # Passar nome do arquivo a ser deletado
-def removeArq(nameFile, conn):
+def removeArq(nameFile, conexao):
     try:
         os.remove(nameFile)
+        conexao.send("Arquivo removido!".encode(CODIFICACAO))
 
-        msg = "Arquivo removido!"
-        msg.encode(FORMAT)
-        conn.send(bytes( msg, FORMAT))
-        
     except Exception as e:
 
         print(e)
 
         msg = "Nao foi possivel remover arquivo!"
-        msg.encode(FORMAT)
-        conn.send(bytes( msg, FORMAT))
+        msg.encode(CODIFICACAO)
+        conexao.send(bytes( msg, CODIFICACAO))
 
     
     print("Chamou removeArq")
     return
 
-def removeDir():
+def removeDir(nameDir, conexao):
+    
+    try:
+        os.rmdir(nameDir)
+        conexao.send("Diretorio removido!".encode(CODIFICACAO))
 
-    #os.rmdir(nameDir)
+    except Exception as e:
+
+        print(e)
+        # arquivos = os.listdir()
+
+        # # Caso o diretorio nao seja vazio
+        # for x in arquivos:
+        #     os.remove(x)
+        
+        # # Volta para o diretorio pai
+        # os.chdir("..")
+
+        # #Deleta o diretorio escolhido
+        # os.rmdir(nameDir)
+
+        
+
     print("Chamou removeDir")
-    pass
+    return
 
-def handle_client(conn, addr):
-    #print(f"[NEW CONNECTION] {addr} connected.")
+def escuta_cliente(conexao, addr):
     print(f"Cliente conectado a {addr}")
     
-    connected = True
-    while connected:
+    conectado = True
+    while conectado:
 
-        msg_length = conn.recv(HEADER).decode(FORMAT)
+        msg_length = conexao.recv(HEADER).decode(CODIFICACAO)
 
-        print(f"AQUI MSG_LENGTH_____>>>>> {msg_length}")
+        print(f"AQUI MSG_LENGTH---->>>>> {msg_length}")
 
         # Se nao for a mensagem de desconexao faz alguma acao
         if msg_length:
 
-            if msg_length != DISCONNECT_MESSAGE:
+            if msg_length != MSG_SAIDA:
                 tamMsg = int(msg_length)
             else:
-                print("Cliente desconectando...")
-                conn.send("Desconectando...".encode(FORMAT))
+                print(f"Cliente {threading.activeCount() -1 } desconectando...")
+                conexao.send("Desconectando...".encode(CODIFICACAO))
                 print()
                 break
 
@@ -139,58 +156,55 @@ def handle_client(conn, addr):
             # Envia arquivo
             if tamMsg == 1:
                 
-                nameFile = conn.recv(HEADER).decode(FORMAT)
-                file = conn.recv(HEADER).decode(FORMAT)
+                nameFile = conexao.recv(HEADER).decode(CODIFICACAO)
+                file = conexao.recv(HEADER).decode(CODIFICACAO)
 
-                enviaArq(nameFile, file, conn)
+                enviaArq(nameFile, file, conexao)
 
             # Cria diretorio
             elif tamMsg == 2:
-                nomeDir = conn.recv(HEADER).decode(FORMAT)
 
-                criaDir(nomeDir, conn)
+                nomeDir = conexao.recv(HEADER).decode(CODIFICACAO)
+                criaDir(nomeDir, conexao)
 
             # Lista diretorio
             elif tamMsg == 3:
-
-                # nameDir = conn.recv(HEADER).decode(FORMAT)
-                listaDir(conn)
+                listaDir(conexao)
                 
 
             # Remove arquivo
             elif tamMsg == 4:
-                nameFile = conn.recv(HEADER).decode(FORMAT)
-                removeArq(nameFile, conn)
+                nameFile = conexao.recv(HEADER).decode(CODIFICACAO)
+                removeArq(nameFile, conexao)
             
             # Remove diretorio
             elif tamMsg == 5:
-                removeDir()
-            # Mensagem recebida
-            #print(f"Mensagem de [{addr}] {msg_length}")
+
+                nome = conexao.recv(HEADER).decode(CODIFICACAO)
+                print(f"ASUDIAUSDUASD {nome}")
+
+                removeDir(nome, conexao)
         
         else:
-            conn.send("Desconectando...".encode(FORMAT))
+            conexao.send("Desconectando...".encode(CODIFICACAO))
             break
 
-    conn.close()
+    conexao.close()
         
 
 def start():
+    # Ouve requisicoes de ADDR
     server.listen()
-    #print(f"[LISTENING] Server is listening on {SERVER}")
     print(f"Conectado a {SERVER}")
+    
     while True:
-        conn, addr = server.accept()
-        thread = threading.Thread(target=handle_client, args=(conn, addr))
+        conexao, addr = server.accept()
+        thread = threading.Thread(target=escuta_cliente, args=(conexao, addr))
         thread.start() # Inicia a execucao da thread
 
-        #print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
         print(f"Clientes conectados {threading.activeCount() - 1}")
-        #acao = 
 
 
-#print("[STARTING] server is starting...")
 print("Subindo servidor...")
-#HEADER = int(sys.argv[1])
 print(f"tam header {HEADER} ")
 start()
