@@ -84,10 +84,14 @@ def enviaArq(file,  conexao):
             
             while mensagem:
                 mensagem = conexao.recv(HEADER)
+
                 if mensagem == b'0':
                     break
                 print(mensagem)
+                
                 f.write(mensagem)
+
+        #conexao.send(f"Arquivo enviado!".encode())
 
 
 
