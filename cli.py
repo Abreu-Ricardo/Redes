@@ -72,15 +72,25 @@ def sendFile(acao):
     #     client.sendfile(f)
     #     pass
 
+    try:
+        print("Enviando aguarde...")
 
-    f = open(nome, "rb")
-    data = f.read()
-    client.sendall(data)
+        f = open(nome, "rb")
+        data = f.read()
+        client.sendall(data)
 
-    time.sleep(1)
-    
-    a = "0"
-    client.send(bytes(a, CODIFICACAO))
+        time.sleep(5)
+
+        a = b'0'
+        client.send(a)
+        #client.send(bytes(a, CODIFICACAO))
+
+        #print(client.recv(HEADER).decode())
+
+    except Exception as e:
+
+        print("Nao foi possivel enviar arquivo!")
+        return
 
     # dado = b'0' * HEADER
     # saida("0")
