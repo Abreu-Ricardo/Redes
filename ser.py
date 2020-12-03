@@ -88,10 +88,10 @@ def enviaArq(file,  conexao):
                 if mensagem == b'0':
                     break
                 print(mensagem)
-                
+
                 f.write(mensagem)
 
-        #conexao.send(f"Arquivo enviado!".encode())
+        conexao.send(f"Arquivo enviado!".encode())
 
 
 
