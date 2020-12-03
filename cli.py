@@ -75,17 +75,21 @@ def sendFile(acao):
     try:
         print("Enviando aguarde...")
 
+        # Carrega na memoria
         f = open(nome, "rb")
+        # Recebe os dados
         data = f.read()
+        # Envia num fluxo soh todos os dados
         client.sendall(data)
 
         time.sleep(5)
 
         a = b'0'
         client.send(a)
+
         #client.send(bytes(a, CODIFICACAO))
 
-        #print(client.recv(HEADER).decode())
+        print(client.recv(HEADER).decode())
 
     except Exception as e:
 
