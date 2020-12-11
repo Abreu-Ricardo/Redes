@@ -4,12 +4,17 @@ import sys
 import os
 import select
 
-#65 MB
-HEADER = 1024*4#*65
+#4KB
+HEADER = 1024*4
 PORTA = int(sys.argv[1]) # colocar para receber como int(sys.arg[2])
 
 # Inicia um server localhost com o parametro vazio
+
 SERVER =  socket.gethostbyname(socket.getfqdn())
+# SERVER =  "192.168.0.20"#socket.gethostname()
+# print(SERVER)
+
+
 #SERVER = '127.0.0.1' # colocar para recever int(sys.arg[1])
 
 ADDR = (SERVER, PORTA)
@@ -22,6 +27,20 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 
+
+def constroiServer():
+    # Ouve requisicoes de ADDR
+    server.listen()
+    print(f"Conectado a {SERVER}")
+    
+    while True:
+        conexao, addr = server.accept()
+        thread = threading.Thread(target=escuta_cliente, args=(conexao, addr))
+        thread.start() # Inicia a execucao da thread
+
+        print(f"Clientes conectados {threading.activeCount() - 1}")
+
+
 def mudaDir(nomeDir, conexao):
     dirAtual = os.listdir()
 
@@ -30,17 +49,6 @@ def mudaDir(nomeDir, conexao):
         
         caminho = os.getcwd()
         conexao.send(f"Diretorio atual {caminho}".encode())
-
-        # for x in dirAtual:
-        #     #print(x)
-            
-        #     if  x == nomeDir and os.path.isdir(x):
-        #         print(f"Achou!!!!!!!!!!! {x}")
-        #         os.chdir(x)
-        #         caminho = os.getcwd()
-        #         print(caminho)
-        #         conexao.send(f"Diretorio atual {caminho}".encode())
-        #         return
 
     except Exception as e:
         print(e)
@@ -70,12 +78,10 @@ def enviaArq(file,  conexao):
 
     
     try:
-        os.mkdir("teste1")
-        os.chdir("teste1")
+        # os.mkdir("teste1")
+        # os.chdir("teste1")
 
         
-        cont = int(0)
-        tam = 1024
         mensagem = conexao.recv(HEADER)
         print(mensagem)
 
@@ -93,44 +99,8 @@ def enviaArq(file,  conexao):
 
         conexao.send(f"Arquivo enviado!".encode())
 
-
-
-        # tam = int(float(conexao.recv(15).decode()))
-        # print(tam)
-
-
-
-
-
-        #************************************************
-        # f = open(file, "wb")
-
-        # for i in range(0, tam):
-        #     print(i)
-        #     data = conexao.recv(HEADER)
-        #     f.write(data)
-
-        # f.close
-
-        # while True:
-        #     cont+=1
-        #     print("1")
-        #     asd = conexao.recv(HEADER)
-        #     print("2")
-        #     print(cont)
-        #     print(asd)
-
-        #     if asd == b'':
-        #         print("entrou no if de saida")
-        #         f.close()
-        #         return
-
-        #     f.write(asd)
-
-        
-
         # voltar para o diretorio que o iniciou
-        os.chdir("..")
+        #os.chdir("..")
         return
 
     except Exception as e:
@@ -200,19 +170,6 @@ def removeDir(nameDir, conexao):
 
         print(e)
         conexao.send(f"{e}".encode())
-
-        # conexao.send("Diretorio nao pode ser removido!".encode(CODIFICACAO))
-        # arquivos = os.listdir()
-
-        # # Caso o diretorio nao seja vazio
-        # for x in arquivos:
-        #     os.remove(x)
-        
-        # # Volta para o diretorio pai
-        # os.chdir("..")
-
-        # #Deleta o diretorio escolhido
-        # os.rmdir(nameDir)
 
         
 
@@ -290,19 +247,19 @@ def escuta_cliente(conexao, addr):
     conexao.close()
         
 
-def start():
-    # Ouve requisicoes de ADDR
-    server.listen()
-    print(f"Conectado a {SERVER}")
+# def start():
+#     # Ouve requisicoes de ADDR
+#     server.listen()
+#     print(f"Conectado a {SERVER}")
     
-    while True:
-        conexao, addr = server.accept()
-        thread = threading.Thread(target=escuta_cliente, args=(conexao, addr))
-        thread.start() # Inicia a execucao da thread
+#     while True:
+#         conexao, addr = server.accept()
+#         thread = threading.Thread(target=escuta_cliente, args=(conexao, addr))
+#         thread.start() # Inicia a execucao da thread
 
-        print(f"Clientes conectados {threading.activeCount() - 1}")
+#         print(f"Clientes conectados {threading.activeCount() - 1}")
 
 
 print("Subindo servidor...")
 print(f"tam header {HEADER} ")
-start()
+constroiServer()
