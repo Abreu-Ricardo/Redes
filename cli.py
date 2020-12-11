@@ -5,11 +5,12 @@ import time
 
 # 65 MB
 HEADER = 1024*4#*65 
-PORTA = int(sys.argv[1])  # colocar para receber como int(sys.arg[2])
+PORTA = int(sys.argv[2])  # colocar para receber como int(sys.arg[2])
 
 # Inicia um server localhost com o parametro vazio
-SERVER = socket.gethostbyname(socket.getfqdn())
-#SERVER = '127.0.1.1'  # colocar para recever int(sys.arg[1])
+#SERVER = socket.gethostbyname(socket.getfqdn())
+SERVER = sys.argv[1]  # colocar para recever int(sys.arg[1])
+#'127.0.1.1'
 
 ADDR = (SERVER, PORTA)
 CODIFICACAO = 'utf-8'
@@ -62,15 +63,6 @@ def sendFile(acao):
 
     # *** ABRINDO ARQUIVO PARA ENVIO ***
 
-    # t = open(nome, "rb")
-    # f = t.read(HEADER)
-    # client.send(f)
-
-
-    # with open(nome,"rb") as f:
-    #     #dado = f.read()
-    #     client.sendfile(f)
-    #     pass
 
     try:
         print("Enviando aguarde...")
@@ -95,87 +87,6 @@ def sendFile(acao):
 
         print("Nao foi possivel enviar arquivo!")
         return
-
-    # dado = b'0' * HEADER
-    # saida("0")
-    # print(dado)
-    # client.send(dado)
-    # tam = os.stat(nome)
-    # print(tam.st_size )
-    # print((tam.st_size / 1024) )
-
-    # tu = int((tam.st_size / 1024) )
-    # t  = str((tam.st_size / 1024) )
-
-    # client.send(bytes(t, CODIFICACAO))
-
-    # with open(nome, "rb") as f:
-    #     dado = f.read(HEADER)
-    #     client.send(dado)
-        
-
-    #     while dado:
-    #         client.sendall(dado)
-    #         dado = f.read(HEADER)
-    #     #client.send(bytes(None, CODIFICACAO))
-    #     #client.send(b'')
-    #     print("Passou!")
-   
-   
-   
-    # f = open(nome, "rb")
-    # for x in range(0,tu):
-    #     dado = f.read(HEADER)
-    #     client.send(dado)
-
-    # print("Enviou tudo!")
-
-
-    
-
-
-    #print(client.recv(HEADER).decode())
-
-    
-    # with open(nome, "rb") as f:
-    #     text = f.read(1024)
-    #     while text:
-
-    #         client.send(text)
-
-    #         print(f"Enviado {text}")
-    #         text = f.read(HEADER)
-
-    #         if not text:
-    #             break
-
-    # print("Acabou de enviar!")
-
-    #  with open(filename, "rb") as f:
-    #     text = f.read(HEADER)
-
-    #     while text:
-    #         conexao.send(text)
-    #         print(f"Enviado {text}")
-    #         text = f.read(HEADER)
-    #         #text.encode()
-    #     f.close()
-   
-
-    # with open(nome, "rb") as f:
-    #     #for x in f:
-    #     while True:
-    #         #dado = x
-    #         #print(x)
-    #         dado = f.read(HEADER)
-
-    #         # Se acabar os dados lidos
-    #         if not dado:
-    #             print(dado)
-    #             #client.send("sai".encode())
-    #             break
-
-    #         client.send(dado)
 
 
    
